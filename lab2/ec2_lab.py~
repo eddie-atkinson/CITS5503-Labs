@@ -14,11 +14,11 @@ from time import sleep
 import boto3
 from namesgenerator import get_random_name
 
-KEY_NAME = "YOUR KEY HERE"
-SG_NAME = "YOUR SECURITY GROUP HERE"
+KEY_NAME = "22487668-key"
+SG_NAME = "22487668-sg"
 
 def create_instances(ec2_resource, n_instances):
-    """Creates n EC2 t2.micro instances in a given security group
+    """Creates and returns n EC2 instances for a given ec2 resource instance
     """
     instances = ec2_resource.create_instances(
         ImageId="ami-d38a4ab1",
@@ -26,7 +26,7 @@ def create_instances(ec2_resource, n_instances):
         MaxCount=n_instances,
         InstanceType="t2.micro",
         KeyName=KEY_NAME,
-        SecurityGroups=[SG_NAME]
+        SecurityGroups=["22487668-sg"]
     )
     for instance in instances:
         instance.wait_until_running()
@@ -39,7 +39,7 @@ def create_instances(ec2_resource, n_instances):
 
 
 def stop_instances(ec2_resource, ec2_client, instances=None):
-    """Stops all running EC2 instances in a given security group
+    """Stops all running instances of EC2 for a given ec2_resource
     """
     print()
     if not instances:
@@ -58,8 +58,8 @@ def stop_instances(ec2_resource, ec2_client, instances=None):
 
 
 def list_instances(ec2_resource, ec2_client, state=""):
-    """Prints and returns all instances in your security group
-    in a given state or all instances if no state is specified
+    """Prints and returns all instances in a given state or all instances
+    if no state is specified
     """
     if state:
         instances = ec2_client.describe_instances(
@@ -84,7 +84,7 @@ def list_instances(ec2_resource, ec2_client, state=""):
 
 
 def terminate_stopped_instances(ec2_resource, ec2_client, instances=None):
-    """Terminates all stopped instances in your security group
+    """Terminates all stopped instances
     """
     if not instances:
         instances = list_instances(ec2_resource, ec2_client, "stopped")
@@ -101,8 +101,7 @@ def terminate_stopped_instances(ec2_resource, ec2_client, instances=None):
         )
 
 def print_public_ips(ec2_resource, ec2_client, instances=None):
-    """Prints the public IP addresses of all running instances in your
-    security group
+    """Prints the public IP addresses of all running instances
     """
     print(
         f"\nPublic IP addresses for instances:\n"
@@ -128,6 +127,8 @@ def main():
     create_instances(ec2_resource, 1)
     list_instances(ec2_resource, ec2_client)
     print_public_ips(ec2_resource, ec2_client)
+    print("Try connecting now")
+    sleep(300)
     stop_instances(ec2_resource, ec2_client)
     terminate_stopped_instances(ec2_resource, ec2_client)
 
