@@ -6,6 +6,7 @@ __copyright__ = "Copyright 2020"
 Simple script to download files and folders from S3 preserving the folder structure
 """
 import boto3
+import hashlib
 from pprint import pprint
 from pathlib import Path
 
@@ -13,26 +14,46 @@ from pathlib import Path
 S3_ROOT_DIR="22487668-cloudstorage"
 
 BUCKET_CONFIG = {'LocationConstraint': 'ap-southeast-2'}
+RESTORE_PATH = "."
 
-def pull_files(s3_client, s3_resource):
+
+def md5_hash(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as infile:
+        for chunk in iter(lambda: infile.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+
+def pull_files(s3_client, s3_resource, dynamo):
     response = s3_client.list_objects(
         Bucket=S3_ROOT_DIR,
         Delimiter=","
     )
 
-    pprint(response)
-    return
     try:
         file_contents = response["Contents"]
     except KeyError:
         print("No files in the S3 bucket specified")
         return
     file_names = [file["Key"] for file in file_contents]
-    current_dir = Path.cwd()
+    restore_dir = Path(RESTORE_PATH).absolute()
     for file in file_names:
-        file_path = current_dir / file
+        s3_obj = s3_resource.Object(S3_ROOT_DIR, file)
+        cloud_hash = s3_obj.metadata["md5hash"]
+        file_path = restore_dir / file
+        if file_path.exists():
+            if cloud_hash == md5_hash(str(file_path)):
+                print(
+                    f"Skipping {file_path}, it is unchanged"
+                )
+                continue
         if not file_path.parent.exists():
             file_path.parent.mkdir(parents=True, exist_ok=True)
+
+        print(
+            f"Restoring {file}"
+        )
         response = s3_resource.meta.client.download_file(
             Bucket=S3_ROOT_DIR,
             Key=file,
@@ -44,25 +65,7 @@ def main():
     s3_client = boto3.client("s3")
     s3_resource = boto3.resource("s3")
     dynamo = boto3.resource("dynamodb", endpoint_url="http://localhost:8000")
-    table = dynamo.Table("CloudFiles")
-    item = {
-        "userId": "54de66f5229dba51d8baf49a5f7501bdfeec4596711c7f01ab2bb822348788",
-        "fileName": "blah.txt",
-        "path": "blah.txt",
-        "lastUpdated": "yesterday",
-        "owner": "david glance",
-        "permissions": ""
-    }
-    # pprint(table.put_item(Item=item))
-    response = table.get_item(
-        Key={
-            "userId": "54de66f5229dba51d8baf49a5f7501bdfeec4596711c7f01ab2bb822348788",
-            "path": "blah.txt"
-        }
-    )
-    pprint(response)
-
-    # pull_files(s3_client, s3_resource)
+    pull_files(s3_client, s3_resource, dynamo)
 
 
 
