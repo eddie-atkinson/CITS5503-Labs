@@ -1,7 +1,7 @@
 {
 	"AttributeDefinitions": [
 		{
-			"AttributeName": "userId",
+			"AttributeName": "owner",
 			"AttributeType": "S"
 		},
 		{
@@ -12,7 +12,7 @@
 	"TableName": "CloudFiles",
 	"KeySchema": [
 		{
-			"AttributeName": "userId",
+			"AttributeName": "owner",
 			"KeyType": "HASH"
 		},
 		{

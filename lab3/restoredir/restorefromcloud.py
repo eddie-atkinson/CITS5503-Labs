@@ -14,15 +14,29 @@ S3_ROOT_DIR="22487668-cloudstorage"
 
 BUCKET_CONFIG = {'LocationConstraint': 'ap-southeast-2'}
 
-def main():
-    s3_client = boto3.client("s3")
-    s3_resource = boto3.resource("s3")
+
+
+def md5_hash(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as infile:
+        for chunk in iter(lambda: infile.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+
+def pull_files(s3_client, s3_resource, dynamo):
     response = s3_client.list_objects(
         Bucket=S3_ROOT_DIR,
         Delimiter=","
     )
 
-    file_contents = response["Contents"]
+    pprint(response)
+    return
+    try:
+        file_contents = response["Contents"]
+    except KeyError:
+        print("No files in the S3 bucket specified")
+        return
     file_names = [file["Key"] for file in file_contents]
     current_dir = Path.cwd()
     for file in file_names:
@@ -34,6 +48,16 @@ def main():
             Key=file,
             Filename=str(file_path)
         )
+
+
+def main():
+    s3_client = boto3.client("s3")
+    s3_resource = boto3.resource("s3")
+    dynamo = boto3.resource("dynamodb", endpoint_url="http://localhost:8000")
+    pull_files(s3_client, s3_resource, dynamo)
+
+
+
 
 
 if __name__ == "__main__":
