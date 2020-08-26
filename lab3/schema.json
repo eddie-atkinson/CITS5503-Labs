@@ -1,0 +1,27 @@
+{
+	"AttributeDefinitions": [
+		{
+			"AttributeName": "userId",
+			"AttributeType": "S"
+		},
+		{
+			"AttributeName": "path",
+			"AttributeType": "S"
+		}
+	],
+	"TableName": "CloudFiles",
+	"KeySchema": [
+		{
+			"AttributeName": "userId",
+			"KeyType": "HASH"
+		},
+		{
+			"AttributeName": "path",
+			"KeyType": "RANGE"
+		}
+	],
+	"ProvisionedThroughput": {
+		"ReadCapacityUnits":5,
+		"WriteCapacityUnits": 5
+	}
+}
