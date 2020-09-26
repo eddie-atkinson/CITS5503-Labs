@@ -17,7 +17,7 @@ import hashlib
 from botocore.exceptions import ClientError
 
 ROOT_DIR = '.'
-ROOT_S3_DIR = '22487668-cloudstorage'
+ROOT_S3_DIR = '22487668-test'
 SHORT_ARGS = "ih"
 LONG_ARGS = ["initialise", "help"]
 DYNAMO_URL = "http://localhost:8000"
