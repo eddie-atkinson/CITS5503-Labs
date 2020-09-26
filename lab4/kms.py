@@ -9,7 +9,7 @@ import boto3
 import json
 
 KEY_DESC = "22487668-testkey"
-ALIAS = "22487668blah"
+ALIAS = "22487668Key"
 key_exists = False
 JSON_FILE = "policy.json"
 policy = ""
@@ -34,7 +34,7 @@ def apply_policy(alias, kms):
 
     resp = kms.put_key_policy(
         KeyId=desired_key_id,
-        PolicyName="22487668KeyPolicy",
+        PolicyName="default",
         Policy=policy,
         BypassPolicyLockoutSafetyCheck=False
     )
@@ -46,7 +46,6 @@ def create_key(kms):
         Description=KEY_DESC,
         KeyUsage="ENCRYPT_DECRYPT",
         Origin="AWS_KMS",
-        Policy=policy
     )
     kid = resp["KeyMetadata"]["KeyId"]
     arn = resp["KeyMetadata"]["Arn"]
@@ -56,5 +55,5 @@ def create_key(kms):
     )
     return kid, arn
 
-create_key(kms)
-# apply_policy(ALIAS, kms)
+# create_key(kms)
+apply_policy(ALIAS, kms)
